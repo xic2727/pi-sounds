@@ -138,28 +138,8 @@ if new_mode != mode:
 
 
 # ---------------------------------------------------------------------------
-# Playlist tracks (the right side of the user's request)
+# Helper: track row renderer (must be defined before it's called below)
 # ---------------------------------------------------------------------------
-
-st.divider()
-if selected_pid is None:
-    st.info("👈 在左侧侧边栏选择一个播放列表，曲目会显示在这里。")
-else:
-    header_left, header_right = st.columns([3, 2])
-    with header_left:
-        st.markdown(f"### 📃 {selected_name} · 曲目（共 {len(selected_items)} 首）")
-    with header_right:
-        is_current = (selected_pid == playing_pid)
-        if is_current:
-            st.caption(f"✓ 当前正在播放此列表")
-        else:
-            st.caption("此列表与正在播放的不同 — 点击 ▶ 跳到这首切到此列表")
-
-    if not selected_items:
-        st.caption("此播放列表没有任何曲目。去 **播放列表** 页面添加。")
-    else:
-        _render_track_list(selected_pid, selected_items, playing_pid, playing_idx)
-
 
 def _render_track_list(
     playlist_id: str,
@@ -193,6 +173,30 @@ def _render_track_list(
             ):
                 client.send_play(playlist_id=playlist_id, index=idx)
                 st.toast(f"跳到第 {idx + 1} 首：**{title}**")
+
+
+# ---------------------------------------------------------------------------
+# Playlist tracks (the right side of the user's request)
+# ---------------------------------------------------------------------------
+
+st.divider()
+if selected_pid is None:
+    st.info("👈 在左侧侧边栏选择一个播放列表，曲目会显示在这里。")
+else:
+    header_left, header_right = st.columns([3, 2])
+    with header_left:
+        st.markdown(f"### 📃 {selected_name} · 曲目（共 {len(selected_items)} 首）")
+    with header_right:
+        is_current = (selected_pid == playing_pid)
+        if is_current:
+            st.caption(f"✓ 当前正在播放此列表")
+        else:
+            st.caption("此列表与正在播放的不同 — 点击 ▶ 跳到这首切到此列表")
+
+    if not selected_items:
+        st.caption("此播放列表没有任何曲目。去 **播放列表** 页面添加。")
+    else:
+        _render_track_list(selected_pid, selected_items, playing_pid, playing_idx)
 
 
 # ---------------------------------------------------------------------------
