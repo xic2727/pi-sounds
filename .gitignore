@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+
+# Data (managed by daemon/scripts)
+data/*.json
+!data/*.json.example
+data/playlists/*.json
+!data/playlists/.gitkeep
+data/*.lock
+data/playlists/*.lock
+data/*.tmp.*
+data/*.corrupt.*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+
+# mpv runtime
+/run/pi-sounds/

@@ -1,0 +1,31 @@
+[Unit]
+Description=pi-sounds audio daemon
+Documentation=https://example.invalid/pi-sounds
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=audio
+WorkingDirectory=/home/pi/pi-sounds
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/pi/pi-sounds
+Environment=PI_SOUNDS_DATA=/home/pi/.local/share/pi-sounds/data
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+ExecStart=/home/pi/pi-sounds/.venv/bin/python -m daemon.main
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=10
+RuntimeDirectory=pi-sounds
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pi-sounds-daemon
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

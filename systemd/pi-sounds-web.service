@@ -1,0 +1,26 @@
+[Unit]
+Description=pi-sounds Streamlit UI
+Documentation=https://example.invalid/pi-sounds
+After=network-online.target pi-sounds-daemon.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/pi-sounds
+Environment=PYTHONPATH=/home/pi/pi-sounds
+Environment=PI_SOUNDS_DATA=/home/pi/.local/share/pi-sounds/data
+ExecStart=/home/pi/pi-sounds/.venv/bin/streamlit run web/app.py \
+    --server.address 0.0.0.0 \
+    --server.port 8501 \
+    --server.headless true \
+    --browser.gatherUsageStats false
+Restart=always
+RestartSec=5
+SyslogIdentifier=pi-sounds-web
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
