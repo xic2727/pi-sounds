@@ -1,26 +1,47 @@
-"""Playlists management page.
-
-Lets the operator create / delete playlists, rename them, switch the
-play mode, reorder items via drag-and-drop, add files from the audio
-directory, and edit titles. Writes go through ``web.client.save_playlist``
-which serialises under the shared lock so the daemon reads consistent
-data.
-
-This page disables autorefresh (the form would be interrupted by it).
-"""
+"""Playlists management page."""
 from __future__ import annotations
 
 import streamlit as st
 
 from shared import schemas
 from web import client
+from web.sidebar import render_sidebar
 
 
 st.set_page_config(page_title="播放列表 · pi-sounds", page_icon="📋", layout="wide")
 
 
+# Shared sidebar (nav, health, real-time volume, manual playlist trigger)
+render_sidebar()
+
+
 # ---------------------------------------------------------------------------
-# Sidebar: playlist picker + new
+# Sidebar additions specific to this page: per-playlist quick-play list
+# ---------------------------------------------------------------------------
+
+playlists_for_sidebar = client.list_playlists()
+if playlists_for_sidebar:
+    with st.sidebar:
+        st.divider()
+        st.markdown("### 📋 快速触发")
+        st.caption("点击任意列表立刻播放。")
+        for pid in playlists_for_sidebar:
+            pl = client.load_playlist(pid) or {}
+            name = pl.get("name") or pid
+            count = len(pl.get("items") or [])
+            btn_label = f"▶ {name}" + (f" ({count})" if count else "")
+            if st.button(
+                btn_label,
+                key=f"quick_play_{pid}",
+                use_container_width=True,
+                disabled=(count == 0),
+            ):
+                client.send_play(playlist_id=pid)
+                st.toast(f"已触发：**{name}**")
+
+
+# ---------------------------------------------------------------------------
+# Main: playlist picker + editor
 # ---------------------------------------------------------------------------
 
 playlist_ids = client.list_playlists()
@@ -34,26 +55,19 @@ def _load(pid: str) -> dict | None:
     return client.load_playlist(pid)
 
 
-with st.sidebar:
-    st.markdown("### 播放列表")
-    selected = st.selectbox(
-        "选择",
-        options=["— 新建 —"] + playlist_ids,
-        index=0 if not playlist_ids else 1,
-        key="playlist_picker",
-    )
-    if st.button("🔄 刷新列表", use_container_width=True):
-        st.rerun()
-
-    st.divider()
-    st.caption("在右侧编辑后点 **保存** 生效。")
+st.markdown("### 选择播放列表")
+selected = st.selectbox(
+    "选择",
+    options=["— 新建 —"] + playlist_ids,
+    index=0 if not playlist_ids else 1,
+    key="playlist_picker",
+    label_visibility="collapsed",
+)
+if st.button("🔄 刷新列表", key="refresh_pl"):
+    st.rerun()
 
 
-# ---------------------------------------------------------------------------
-# Main area
-# ---------------------------------------------------------------------------
-
-st.title("📋 播放列表管理")
+st.divider()
 
 # If user just clicked "新建", show the new-playlist form
 if selected == "— 新建 —":
@@ -253,7 +267,7 @@ except ImportError:
 
 # ---- save / delete buttons ----
 st.divider()
-col_save, col_del, col_dup = st.columns([2, 2, 2])
+col_save, col_del, col_dup, col_play = st.columns([2, 1.5, 2, 2])
 
 with col_save:
     if st.button("💾 保存", type="primary", use_container_width=True):
@@ -271,6 +285,31 @@ with col_save:
             st.success(f"已保存 {selected}")
         except Exception as e:
             st.error(f"保存失败：{e}")
+
+with col_play:
+    play_disabled = (len(draft["items"]) == 0)
+    if st.button(
+        "▶ 立即播放此列表",
+        type="primary",
+        use_container_width=True,
+        disabled=play_disabled,
+    ):
+        # Save first (so any pending edits stick) then trigger.
+        new_pl = schemas.make_playlist(
+            selected,
+            draft["name"],
+            items=[{"path": it["path"], "title": it["title"], "missing": it.get("missing", False)}
+                   for it in draft["items"]],
+            play_mode=draft["play_mode"],
+        )
+        new_pl["created_at"] = playlist.get("created_at") or new_pl["created_at"]
+        try:
+            client.save_playlist(new_pl)
+        except Exception as e:
+            st.error(f"保存失败，未触发播放：{e}")
+        else:
+            client.send_play(playlist_id=selected)
+            st.toast(f"正在播放 **{draft['name']}**")
 
 with col_del:
     confirm = st.checkbox("确认删除", key=f"{key}_confirm_del")

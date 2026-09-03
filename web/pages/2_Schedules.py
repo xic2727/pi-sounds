@@ -19,9 +19,13 @@ import streamlit as st
 from daemon.scheduler import validate_cron, next_fire
 from shared import schemas
 from web import client
+from web.sidebar import render_sidebar
 
 
 st.set_page_config(page_title="定时任务 · pi-sounds", page_icon="⏰", layout="wide")
+
+# Shared sidebar (nav, health, real-time volume, manual playlist trigger)
+render_sidebar()
 
 
 # ---------------------------------------------------------------------------

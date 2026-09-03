@@ -9,9 +9,13 @@ import streamlit as st
 from shared import paths
 from shared import schemas
 from web import client
+from web.sidebar import render_sidebar
 
 
 st.set_page_config(page_title="设置 · pi-sounds", page_icon="⚙️", layout="wide")
+
+# Shared sidebar (nav, health, real-time volume, manual playlist trigger)
+render_sidebar()
 
 st.title("⚙️ 设置")
 
