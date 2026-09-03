@@ -71,6 +71,12 @@ _TLS = _threading.local()
 
 def _posix_lock(path: str, shared: bool, timeout: float) -> None:
     lock_path = path + ".lock"
+    # Ensure the parent directory exists before opening the lock file.
+    # Without this, the very first lock attempt after a fresh install
+    # raises FileNotFoundError because data dir hasn't been created yet.
+    parent = os.path.dirname(lock_path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o664)
     flag = (fcntl.LOCK_SH if shared else fcntl.LOCK_EX) | fcntl.LOCK_NB
     deadline = time.monotonic() + timeout

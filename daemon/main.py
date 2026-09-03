@@ -34,9 +34,15 @@ def main() -> int:
     setup_logging()
     log.info("%s starting (pid=%d)", DAEMON_NAME, os.getpid())
 
+    # 0. Make sure the data directory exists. This lets users start the
+    # daemon without first running scripts/init_data.py; defaults are
+    # picked up automatically when files are missing.
+    paths.data_dir().mkdir(parents=True, exist_ok=True)
+    paths.playlists_dir().mkdir(parents=True, exist_ok=True)
+    paths.runtime_dir().mkdir(parents=True, exist_ok=True)
+
     # 1. Load configuration
     cfg = store.load_config()
-    paths.runtime_dir().mkdir(parents=True, exist_ok=True)
 
     # 2. Construct the player
     player = MpvPlayer(
