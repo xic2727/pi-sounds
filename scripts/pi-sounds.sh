@@ -24,7 +24,7 @@ VENV="${VENV:-$APP_DIR/venv}"
 LOG_DIR="${LOG_DIR:-$APP_DIR/logs}"
 PID_DIR="${PID_DIR:-$APP_DIR/run}"
 HOST="${HOST:-0.0.0.0}"
-PORT="${PORT:-8501}"
+PORT="${PORT:-8601}"
 
 DAEMON_NAME="pi-sounds-daemon"
 WEB_NAME="pi-sounds-web"
