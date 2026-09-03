@@ -33,8 +33,9 @@ data/*.corrupt.*
 *.swo
 .DS_Store
 
-# Logs
-*.log
+# Logs and PID files produced by scripts/pi-sounds.sh
+logs/
+run/
 
 # mpv runtime
 /run/pi-sounds/
