@@ -20,7 +20,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${APP_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-VENV="${VENV:-$APP_DIR/.venv}"
+VENV="${VENV:-$APP_DIR/venv}"
 LOG_DIR="${LOG_DIR:-$APP_DIR/logs}"
 PID_DIR="${PID_DIR:-$APP_DIR/run}"
 HOST="${HOST:-0.0.0.0}"
@@ -66,7 +66,7 @@ start_one() {
         return 0
     fi
     rm -f "$pidfile"
-    [[ -x "$VENV_PY" ]] || die "venv python not found at $VENV_PY (run: python3 -m venv \"$VENV\" && .venv/bin/pip install -r requirements.txt)"
+    [[ -x "$VENV_PY" ]] || die "venv python not found at $VENV_PY (run: python3 -m venv \"$VENV\" && venv/bin/pip install -r requirements.txt)"
     log "starting $name ..."
     # Activate venv in the same shell so the background process inherits
     # PATH/VIRTUAL_ENV. cd to APP_DIR so relative imports work, then
